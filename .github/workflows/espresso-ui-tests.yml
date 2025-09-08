@@ -1,0 +1,45 @@
+name: Espresso UI Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  run-espresso-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # 1️⃣ Checkout your code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Set up JDK 17
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # 3️⃣ Make Gradle wrapper executable
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      # 4️⃣ Start emulator and run Espresso tests
+      - name: Run Espresso UI Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30          # Android version for the emulator
+          target: default
+          arch: x86_64
+          profile: Nexus 6       # Emulator device
+          script: ./gradlew connectedCheck
+
+      # 5️⃣ Upload test results
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: espresso-test-reports
+          path: app/build/reports
